@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en" id="htmlRoot">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Energy Check-In — CARE-AI Self-Care Micro-Planner</title>
+<meta name="description" content="A private, 90-second self-care check-in for school staff — no login, nothing tracked unless you choose to.">
+<meta property="og:title" content="The Energy Check-In">
+<meta property="og:description" content="A private, 90-second self-care check-in for school staff — no login, nothing tracked unless you choose to.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="The Energy Check-In">
+<meta name="twitter:description" content="A private, 90-second self-care check-in for school staff.">
+<meta name="twitter:image" content="icon-512.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#1E2761">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Energy Check-In">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --navy:#1E2761;
+    --navy-deep:#141B47;
+    --gold:#C9A24B;
+    --gold-text:#8A6A1F;
+    --gold-soft:#E8D6A8;
+    --ink:#20233A;
+    --paper:#FFFFFF;
+    --mist:#F4F5F9;
+    --line:#DEE1EC;
+    --amber-bg:#FBF3E3;
+    --amber-line:#E9CD8F;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Cambria','Century Schoolbook',Georgia,serif;
+    background:var(--mist);
+    color:var(--ink);
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:40px 24px 80px;}
+  header{text-align:left;margin-bottom:20px;}
+  .eyebrow{
+    font-family:'Calibri','Arial',sans-serif;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-size:12px;
+    color:var(--gold-text);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  h1{
+    font-size:clamp(28px,5vw,38px);
+    color:var(--navy);
+    margin:0 0 10px;
+    line-height:1.15;
+  }
+  .sub{
+    font-family:'Calibri','Arial',sans-serif;
+    color:#4C5170;
+    font-size:15px;
+    max-width:56ch;
+    line-height:1.5;
+  }
+
+  .controls-bar{
+    display:flex; flex-wrap:wrap; gap:10px;
+    margin:20px 0 10px;
+    padding:14px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:12px;
+    align-items:center;
+  }
+  .controls-bar.secondary{margin-top:0; margin-bottom:18px;}
+  .control-group{display:flex; align-items:center; gap:6px;}
+  .toggle-btn{
+    font-family:'Calibri','Arial',sans-serif;
+    font-size:12.5px;
+    border:1.5px solid var(--line);
+    background:var(--mist);
+    color:var(--ink);
+    padding:8px 12px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  .toggle-btn[aria-pressed="true"]{
+    background:var(--navy);
+    border-color:var(--navy);
+    color:var(--paper);
+    font-weight:700;
+  }
+  .toggle-btn.solo{background:var(--paper);}
+  .toggle-btn.solo[aria-pressed="true"]{background:var(--gold); border-color:var(--gold); color:var(--navy-deep);}
+  select#roleSelect{
+    font-family:'Calibri','Arial',sans-serif;
+    font-size:12.5px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    padding:7px 8px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  label[for="roleSelect"]{
+    font-family:'Calibri','Arial',sans-serif;
+    font-size:12.5px;
+    color:#4C5170;
+  }
+
+  .progress-wrap{margin-bottom:22px;}
+  .progress-bar{height:8px; border-radius:5px; background:var(--line); overflow:hidden;}
+  .progress-fill{height:100%; width:0%; background:var(--gold); transition:width .35s ease;}
+  .progress-label{font-family:'Calibri','Arial',sans-serif; font-size:12px; color:#8388A3; margin:6px 0 0;}
+
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:28px;
+    margin-bottom:20px;
+  }
+  .card h2{
+    font-family:'Calibri','Arial',sans-serif;
+    font-size:13px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--navy);
+    margin:0;
+    font-weight:700;
+    display:inline;
+  }
+  .q-header{display:flex; align-items:center; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .why-btn{
+    font-family:'Calibri','Arial',sans-serif;
+    font-size:11px;
+    width:20px;height:20px;border-radius:50%;
+    border:1.5px solid var(--gold);
+    background:var(--paper);
+    color:var(--gold-text);
+    cursor:pointer;
+    line-height:1;
+    padding:0;
+    flex:0 0 auto;
+  }
+  .why-btn[aria-expanded="true"]{background:var(--gold); color:var(--navy-deep);}
+  .why-text{
+    display:none;
+    font-family:'Calibri','Arial',sans-serif;
+    font-size:12.5px; color:#5C6182; line-height:1.5;
+    background:var(--mist); border-radius:8px; padding:10px 12px;
+    margin:-6px 0 16px;
+  }
+  .why-text.show{display:block;}
+
+  .options{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;}
+  .opt{
+    font-family:'Calibri','Arial',sans-serif;
+    border:1.5px solid var(--line);
+    background:var(--mist);
+    color:var(--ink);
+    border-radius:10px;
+    padding:14px 10px;
+    text-align:center;
+    font-size:14px;
+    cursor:pointer;
+    transition:all .15s ease;
+  }
+  .opt:hover{border-color:var(--gold);}
+  .opt[aria-checked="true"]{background:var(--navy); border-color:var(--navy); color:var(--paper); font-weight:600;}
+
+  button.generate{
+    width:100%;
+    font-family:'Calibri','Arial',sans-serif;
+    background:var(--gold);
+    color:var(--navy-deep);
+    border:none;
+    border-radius:10px;
+    padding:16px;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:.03em;
+    cursor:pointer;
+    margin-top:6px;
+  }
+  button.generate:disabled{background:#E4E6EE; color:#9498AC; cursor:not-allowed;}
+  button.generate:not(:disabled):hover{background:#B8923C;}
+
+  .result{display:none;}
+  .result.show{display:block;}
+
+  .gauge-row{display:flex; align-items:center; gap:22px; margin-bottom:22px;}
+  .gauge{position:relative; width:96px;height:96px;flex:0 0 auto;}
+  .gauge svg{transform:rotate(-90deg);}
+  .gauge-label{position:absolute;inset:0; display:flex;align-items:center;justify-content:center; flex-direction:column;}
+  .gauge-label .n{font-size:22px;font-weight:700;color:var(--navy);font-family:'Calibri','Arial',sans-serif;}
+  .gauge-label .u{font-size:9px;color:#8388A3;font-family:'Calibri','Arial',sans-serif;letter-spacing:.05em;}
+  .gauge-copy{font-family:'Calibri','Arial',sans-serif;font-size:14px;color:#4C5170;line-height:1.5;}
+  .gauge-copy b{color:var(--navy);}
+
+  .plan-item{display:flex;gap:14px; padding:16px 0; border-top:1px solid var(--line);}
+  .plan-item:first-of-type{border-top:none;}
+  .badge{
+    flex:0 0 auto; width:34px;height:34px; border-radius:50%;
+    background:var(--navy); color:var(--gold-soft);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Calibri','Arial',sans-serif; font-size:14px;font-weight:700;
+  }
+  .plan-item .txt .label{
+    font-family:'Calibri','Arial',sans-serif;
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--gold-text);font-weight:700;margin-bottom:4px;
+  }
+  .plan-item .txt p{margin:0;font-size:15px;line-height:1.5;color:var(--ink);}
+
+  .escalation-card{
+    background:var(--amber-bg); border:1px solid var(--amber-line);
+    border-radius:14px; padding:22px 24px; margin-bottom:20px;
+  }
+  .escalation-card h3{
+    font-family:'Calibri','Arial',sans-serif; font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+    color:#8A6A1F; margin:0 0 10px; font-weight:700;
+  }
+  .escalation-card p{font-family:'Calibri','Arial',sans-serif; font-size:14px; line-height:1.55; color:#3D3316; margin:0 0 10px;}
+  .escalation-card .fine{font-size:12px; color:#8A6A1F; font-style:italic;}
+  .escalation-dismiss{
+    font-family:'Calibri','Arial',sans-serif; font-size:12.5px;
+    border:1.5px solid #8A6A1F; background:transparent; color:#5C481A;
+    padding:7px 14px; border-radius:8px; cursor:pointer; margin-top:8px;
+  }
+  .escalation-dismiss:hover{background:#8A6A1F; color:#fff;}
+
+  .intro-card{
+    background:var(--mist); border:1px solid var(--line); border-left:4px solid var(--navy);
+    border-radius:10px; padding:18px 20px; margin-bottom:18px;
+  }
+  .intro-card h3{
+    font-family:'Calibri','Arial',sans-serif; font-size:13px; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--navy); margin:0 0 8px; font-weight:700;
+  }
+  .intro-card p{font-family:'Calibri','Arial',sans-serif; font-size:13.5px; line-height:1.55; color:var(--ink); margin:0 0 12px;}
+  .intro-dismiss{
+    font-family:'Calibri','Arial',sans-serif; font-size:12.5px;
+    border:1.5px solid var(--navy); background:var(--navy); color:var(--paper);
+    padding:8px 16px; border-radius:8px; cursor:pointer;
+  }
+  .intro-dismiss:hover{background:var(--navy-deep);}
+
+  .feedback-row{
+    display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+    font-family:'Calibri','Arial',sans-serif; font-size:13px; color:#4C5170;
+    margin-top:14px; padding-top:14px; border-top:1px solid var(--line);
+  }
+  .feedback-btn{
+    border:1.5px solid var(--line); background:var(--paper);
+    border-radius:8px; padding:6px 13px; font-size:16px; cursor:pointer; line-height:1;
+  }
+  .feedback-btn:hover{border-color:var(--navy);}
+  .feedback-btn.selected{border-color:var(--navy); background:var(--mist);}
+  .feedback-btn:disabled{cursor:default; opacity:.55;}
+  .feedback-thanks{font-size:12.5px; color:#5C6182; font-style:italic;}
+
+  .manual-copy-overlay{
+    display:none; position:fixed; inset:0; background:rgba(20,27,71,.55);
+    z-index:1000; align-items:center; justify-content:center; padding:20px;
+  }
+  .manual-copy-box{
+    background:var(--paper); border-radius:14px; padding:22px;
+    max-width:480px; width:100%; box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .manual-copy-box p{
+    font-family:'Calibri','Arial',sans-serif; font-size:13.5px; color:var(--ink);
+    line-height:1.5; margin:0 0 12px;
+  }
+  .manual-copy-box textarea{
+    width:100%; min-height:180px; font-family:'Calibri','Arial',sans-serif; font-size:13px;
+    color:var(--ink); border:1.5px solid var(--line); border-radius:8px; padding:10px;
+    resize:vertical; box-sizing:border-box;
+  }
+  .manual-copy-box button{
+    margin-top:12px; font-family:'Calibri','Arial',sans-serif; font-size:13px;
+    border:1.5px solid var(--navy); background:var(--navy); color:var(--paper);
+    padding:9px 18px; border-radius:8px; cursor:pointer;
+  }
+  .manual-copy-box button:hover{background:var(--navy-deep);}
+
+  .actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;}
+  .actions button{
+    font-family:'Calibri','Arial',sans-serif;
+    border:1.5px solid var(--navy);
+    background:transparent; color:var(--navy);
+    padding:10px 16px; border-radius:8px; font-size:13px; cursor:pointer;
+  }
+  .actions button:hover{background:var(--navy);color:var(--paper);}
+  .actions button[hidden]{display:none;}
+
+  .pulse-card{
+    background:var(--paper); border:1px solid var(--line); border-radius:14px;
+    padding:24px; margin:0 0 20px;
+  }
+  .pulse-card h2{display:block; margin-bottom:10px;}
+  .pulse-stat{font-family:'Calibri','Arial',sans-serif; font-size:28px; color:var(--navy); font-weight:700;}
+  .pulse-sub{font-family:'Calibri','Arial',sans-serif; font-size:13px; color:#4C5170; margin:2px 0 14px;}
+  .pulse-disclaimer{
+    font-family:'Calibri','Arial',sans-serif; font-size:11.5px; color:#8388A3;
+    background:var(--mist); border-radius:8px; padding:10px 12px; line-height:1.5;
+  }
+
+  footer{text-align:center;margin-top:36px; font-family:'Calibri','Arial',sans-serif; font-size:12px;color:#9498AC;}
+  .paper-link{text-align:center; margin-top:14px;}
+  .paper-link a{
+    font-family:'Calibri','Arial',sans-serif; font-size:12.5px; color:var(--navy);
+    text-decoration:none; border-bottom:1px dotted var(--navy);
+  }
+  .paper-link a:hover{color:var(--gold-text); border-color:var(--gold-text);}
+
+  .privacy-note{
+    display:flex;gap:8px;align-items:flex-start;
+    font-family:'Calibri','Arial',sans-serif; font-size:12px;color:#6B7093;
+    background:var(--mist); border-radius:8px; padding:10px 12px; margin-top:16px;
+  }
+
+  .opt:focus-visible, button:focus-visible, select:focus-visible{
+    outline:3px solid var(--navy); outline-offset:2px;
+  }
+
+  @keyframes fadeSlideUp{from{opacity:0; transform:translateY(14px);} to{opacity:1; transform:translateY(0);}}
+  .result.show{animation:fadeSlideUp .45s ease both;}
+  @keyframes gaugePop{0%{transform:scale(.85);} 60%{transform:scale(1.06);} 100%{transform:scale(1);}}
+  .gauge.pop{animation:gaugePop .5s cubic-bezier(.34,1.56,.64,1);}
+  #gaugeArc{transition:stroke-dashoffset 1s cubic-bezier(.22,1,.36,1);}
+  @media (prefers-reduced-motion: reduce){
+    .result.show, .gauge.pop{animation:none;}
+    #gaugeArc{transition:none;}
+  }
+
+  .session-note{text-align:center; font-family:'Calibri','Arial',sans-serif; font-size:12px;color:#9498AC; margin-top:6px;}
+
+  body.kiosk .wrap{max-width:920px;}
+  body.kiosk h1{font-size:46px;}
+  body.kiosk .sub{font-size:18px;}
+  body.kiosk .card h2{font-size:16px;}
+  body.kiosk .opt{font-size:18px; padding:20px 14px;}
+  body.kiosk button.generate{font-size:19px; padding:22px;}
+  body.kiosk .plan-item .txt p{font-size:19px;}
+  body.kiosk .plan-item .label{font-size:13px;}
+  body.kiosk .gauge{width:130px;height:130px;}
+  body.kiosk .gauge svg{width:130px;height:130px;}
+  body.kiosk .gauge-label .n{font-size:30px;}
+  body.kiosk .gauge-copy{font-size:17px;}
+  body.kiosk .toggle-btn, body.kiosk select#roleSelect, body.kiosk label[for="roleSelect"]{font-size:15px;}
+
+  @media print{
+    body{background:#FFFFFF;}
+    .card{border:1px solid #ccc; box-shadow:none;}
+    .options, .generate, .actions, footer, .session-note, .controls-bar, .progress-wrap, .paper-link, .pulse-card, .intro-card, .feedback-row, .manual-copy-overlay{display:none !important;}
+    .result{display:block !important; animation:none !important;}
+    .wrap{max-width:100%;padding:0.4in;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow" id="txtEyebrow">CARE-AI · Educator Wellness</div>
+    <h1 id="txtTitle">The Energy Check-In</h1>
+    <p class="sub" id="txtSub"></p>
+  </header>
+
+  <div class="intro-card" id="introCard" style="display:none;">
+    <h3 id="introTitle"></h3>
+    <p id="introBody"></p>
+    <button class="intro-dismiss" id="introDismiss"></button>
+  </div>
+
+  <div class="controls-bar">
+    <div class="control-group" role="group" aria-label="Check-in length">
+      <button class="toggle-btn" id="modeFullBtn" aria-pressed="true"></button>
+      <button class="toggle-btn" id="modeQuickBtn" aria-pressed="false"></button>
+    </div>
+    <div class="control-group">
+      <label for="roleSelect" id="roleLabelTxt">I am a…</label>
+      <select id="roleSelect">
+        <option value="">—</option>
+        <option value="teacher">Teacher</option>
+        <option value="counselor">Counselor</option>
+        <option value="support">Support staff</option>
+        <option value="admin">Admin</option>
+        <option value="para">Paraprofessional</option>
+        <option value="frontoffice">Front office / clerical</option>
+        <option value="specialist">Specials teacher</option>
+        <option value="facilities">Custodial / nutrition / transportation</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="control-group">
+      <button class="toggle-btn solo" id="kioskBtn" aria-pressed="false"></button>
+    </div>
+    <div class="control-group">
+      <button class="toggle-btn solo" id="langBtn" aria-pressed="false"></button>
+    </div>
+  </div>
+
+  <div class="controls-bar secondary">
+    <div class="control-group">
+      <button class="toggle-btn solo" id="rememberBtn" aria-pressed="false"></button>
+    </div>
+    <div class="control-group">
+      <button class="toggle-btn solo" id="pulseBtn" aria-pressed="false"></button>
+    </div>
+  </div>
+
+  <div class="pulse-card" id="pulseCard" style="display:none;">
+    <h2 id="pulseTitle"></h2>
+    <div id="pulseBody"></div>
+    <p class="pulse-disclaimer" id="pulseDisclaimer"></p>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <p class="progress-label" id="progressLabel"></p>
+  </div>
+
+  <div id="questionsWrap"></div>
+
+  <button class="generate" id="genBtn" disabled aria-describedby="genHelp"></button>
+  <p id="genHelp" class="session-note"></p>
+
+  <div class="result" id="result" role="region" aria-live="polite" aria-label="Your generated check-in plan">
+
+    <div class="escalation-card" id="escalationCard" style="display:none;">
+      <h3 id="escTitle"></h3>
+      <p id="escBody"></p>
+      <p class="fine" id="escSub"></p>
+      <button class="escalation-dismiss" id="escDismiss"></button>
+    </div>
+
+    <div class="card">
+      <h2 id="snapshotTitle"></h2>
+      <div class="gauge-row">
+        <div class="gauge">
+          <svg width="96" height="96" viewBox="0 0 96 96">
+            <circle cx="48" cy="48" r="40" stroke="#E4E6EE" stroke-width="10" fill="none"/>
+            <circle id="gaugeArc" cx="48" cy="48" r="40" stroke="#C9A24B" stroke-width="10" fill="none"
+              stroke-linecap="round" stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
+          </svg>
+          <div class="gauge-label"><span class="n" id="gaugeNum">--</span><span class="u">RESTORE</span></div>
+        </div>
+        <div class="gauge-copy" id="gaugeCopy"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2 id="planTitle"></h2>
+      <div id="planList"></div>
+      <div class="feedback-row" id="feedbackRow">
+        <span id="feedbackLabel"></span>
+        <button class="feedback-btn" id="feedbackYes" type="button">👍</button>
+        <button class="feedback-btn" id="feedbackNo" type="button">👎</button>
+        <span class="feedback-thanks" id="feedbackThanks" style="display:none;"></span>
+      </div>
+    </div>
+
+    <div class="privacy-note" id="privacyNote"></div>
+
+    <div class="actions">
+      <button id="copyBtn"></button>
+      <button id="printBtn"></button>
+      <button id="speakBtn" hidden></button>
+      <button id="stopSpeakBtn" hidden></button>
+      <button id="icsBtn"></button>
+      <button id="resetBtn"></button>
+    </div>
+    <p class="session-note" id="sessionNote"></p>
+    <p class="session-note" id="rememberNote"></p>
+  </div>
+
+  <div class="paper-link"><a id="paperLink" href="energy-checkin-worksheet.pdf" target="_blank" rel="noopener"></a></div>
+  <footer id="txtFooter"></footer>
+</div>
+
+<div class="manual-copy-overlay" id="manualCopyOverlay">
+  <div class="manual-copy-box">
+    <p id="manualCopyLabel"></p>
+    <textarea id="manualCopyText" readonly></textarea>
+    <button id="manualCopyClose"></button>
+  </div>
+</div>
+
+<script>
+/* ---------------- i18n + content data ---------------- */
+const UI = {
+  en: {
+    subFull: "A self-contained, offline browser tool. No login, no data leaves the screen — seven quick questions produce a plan sized to what you actually have left today.",
+    subQuick: "Quick mode: three core questions, about thirty seconds, a smaller plan.",
+    modeFull: "Full (7 questions)",
+    modeQuick: "Quick (3 questions)",
+    roleLabel: "I am a…",
+    roleOpts: {"":"—", teacher:"Teacher", counselor:"Counselor", support:"Support staff", admin:"Admin", para:"Paraprofessional", frontoffice:"Front office / clerical", specialist:"Specials teacher", facilities:"Custodial / nutrition / transportation", other:"Other"},
+    kiosk: "Large text mode",
+    langBtn: "Español",
+    rememberOff: "Remember check-ins: off",
+    rememberOn: "Remember check-ins: on",
+    pulseBtn: "Energy Trend (this device)",
+    pulseTitle: "Energy Trend — this device only",
+    pulseCount: (n)=>`${n} check-in${n===1?'':'s'} remembered on this device`,
+    pulseAvgLabel: "Average restore score",
+    pulseEmpty: "No check-ins remembered yet. Turn on \"Remember check-ins\" above, then generate a plan.",
+    pulseUnavailable: "Local memory isn't available in this preview. Open the downloaded file directly in your browser to use this feature.",
+    pulseDisclaimer: "Reflects only check-ins saved on this browser/device — not building-wide data. Real multi-device aggregation would need a shared backend, not just this file.",
+    clearHistory: "Clear my history",
+    genBtn: "Build my check-in plan",
+    genHelpFull: "Answer all seven questions above to enable this button.",
+    genHelpQuick: "Answer all three questions above to enable this button.",
+    progress: (a,t)=>`${a} of ${t} answered`,
+    snapshotTitle: "Your Energy Snapshot",
+    planTitle: "Your Micro-Plan",
+    privacy: "🔒 Nothing you enter here is stored, transmitted, or logged — this plan exists only in your browser tab (unless you turn on local memory above).",
+    copyBtn: "Copy plan as text",
+    printBtn: "Print this plan",
+    speakBtn: "🔊 Read plan aloud",
+    stopSpeakBtn: "⏹ Stop reading",
+    icsBtn: "📅 Add to Google Calendar",
+    resetBtn: "Start over",
+    footer: "Built for the CARE-AI Framework · Capacity · Accessible Support · Responsive Communities · Educator Wellness",
+    paperLink: "🖨️ Prefer paper? Download the blank worksheet",
+    escTitle: "Before you go —",
+    escBody: "This sounds like more than a rough day. If it's sitting heavier than usual, consider reaching out to [Your EAP line here] or a trusted colleague. You don't have to carry this alone.",
+    escSub: "This tool isn't a substitute for professional support.",
+    escDismiss: "Dismiss",
+    sessionOne: "This is your 1st check-in this session — not saved anywhere after you close this tab.",
+    sessionMany: (n)=>`This is check-in #${n} this session — still nothing saved after you close this tab.`,
+    rememberedYes: "Saved to this device's local memory (last 5 kept).",
+    rememberedBlocked: "Couldn't save locally — storage is blocked in this preview.",
+    copied: "Copied ✓",
+    copyFailed: "Couldn't copy — try selecting the text manually",
+    manualCopyLabel: "Automatic copy didn't work here. Tap the text below, then copy it yourself — long-press → Copy on phone, or Ctrl/Cmd+C on desktop.",
+    manualCopyClose: "Close",
+    copyHeader: "MY ENERGY CHECK-IN PLAN",
+    planLabels: {protect:"Protect", release:"Release", body:"Body", recharge:"Recharge", connect:"Connect", boundary:"Boundary"},
+    whyAria: "Why this question?",
+    introTitle: "Before you start — what this tool does and doesn't do",
+    introBody: "This runs entirely in your browser. Nothing you answer is sent anywhere, ever. By default, nothing is even saved after you close this tab — turning on \"Remember check-ins\" later saves only a plan score, locally, on this device. No one — not your principal, not IT, not anyone — can see your individual answers.",
+    introDismiss: "Got it, let's start",
+    feedbackLabel: "Was this helpful?",
+    feedbackThanks: "Thanks — recorded on this device only.",
+    pulseFeedback: (y,n)=>`Feedback on this device: ${y} 👍 / ${n} 👎`,
+  },
+  es: {
+    subFull: "Una herramienta autónoma que funciona sin conexión. Sin inicio de sesión, ningún dato sale de la pantalla — siete preguntas rápidas generan un plan del tamaño de lo que realmente te queda hoy.",
+    subQuick: "Modo rápido: tres preguntas clave, unos treinta segundos, un plan más pequeño.",
+    modeFull: "Completo (7 preguntas)",
+    modeQuick: "Rápido (3 preguntas)",
+    roleLabel: "Soy…",
+    roleOpts: {"":"—", teacher:"Docente", counselor:"Consejero/a", support:"Personal de apoyo", admin:"Administración", para:"Paraprofesional", frontoffice:"Oficina / administrativo", specialist:"Maestro/a de especialidades", facilities:"Conserjería / nutrición / transporte", other:"Otro"},
+    kiosk: "Modo texto grande",
+    langBtn: "English",
+    rememberOff: "Recordar chequeos: no",
+    rememberOn: "Recordar chequeos: sí",
+    pulseBtn: "Tendencia de Energía (este dispositivo)",
+    pulseTitle: "Tendencia de Energía — solo este dispositivo",
+    pulseCount: (n)=>`${n} chequeo${n===1?'':'s'} recordado${n===1?'':'s'} en este dispositivo`,
+    pulseAvgLabel: "Puntaje promedio de recuperación",
+    pulseEmpty: "Aún no hay chequeos recordados. Activa \"Recordar chequeos\" arriba y luego genera un plan.",
+    pulseUnavailable: "La memoria local no está disponible en esta vista previa. Abre el archivo descargado directamente en tu navegador para usar esta función.",
+    pulseDisclaimer: "Refleja solo los chequeos guardados en este navegador/dispositivo — no datos de todo el edificio. Una agregación real entre dispositivos necesitaría un servidor compartido, no solo este archivo.",
+    clearHistory: "Borrar mi historial",
+    genBtn: "Generar mi plan de chequeo",
+    genHelpFull: "Responde las siete preguntas para activar este botón.",
+    genHelpQuick: "Responde las tres preguntas para activar este botón.",
+    progress: (a,t)=>`${a} de ${t} respondidas`,
+    snapshotTitle: "Tu Panorama de Energía",
+    planTitle: "Tu Micro-Plan",
+    privacy: "🔒 Nada de lo que ingreses aquí se guarda, transmite ni registra — este plan existe solo en tu pestaña del navegador (a menos que actives la memoria local arriba).",
+    copyBtn: "Copiar plan como texto",
+    printBtn: "Imprimir este plan",
+    speakBtn: "🔊 Leer el plan en voz alta",
+    stopSpeakBtn: "⏹ Detener lectura",
+    icsBtn: "📅 Agregar a Google Calendar",
+    resetBtn: "Empezar de nuevo",
+    footer: "Creado para el Marco CARE-AI · Capacidad · Apoyo Accesible · Comunidades Responsivas · Bienestar Docente",
+    paperLink: "🖨️ ¿Prefieres papel? Descarga la hoja en blanco",
+    escTitle: "Antes de irte —",
+    escBody: "Esto suena a más que un mal día. Si se siente más pesado de lo habitual, considera contactar a [tu línea de EAP aquí] o a un colega de confianza. No tienes que cargar esto sola/o.",
+    escSub: "Esta herramienta no sustituye el apoyo profesional.",
+    escDismiss: "Cerrar",
+    sessionOne: "Este es tu 1er chequeo de esta sesión — no se guarda en ningún lugar al cerrar esta pestaña.",
+    sessionMany: (n)=>`Este es el chequeo #${n} de esta sesión — sigue sin guardarse nada al cerrar esta pestaña.`,
+    rememberedYes: "Guardado en la memoria local de este dispositivo (se conservan los últimos 5).",
+    rememberedBlocked: "No se pudo guardar localmente — el almacenamiento está bloqueado en esta vista previa.",
+    copied: "Copiado ✓",
+    copyFailed: "No se pudo copiar — intenta seleccionar el texto manualmente",
+    manualCopyLabel: "La copia automática no funcionó aquí. Toca el texto de abajo y cópialo tú mismo — mantén presionado → Copiar en el teléfono, o Ctrl/Cmd+C en la computadora.",
+    manualCopyClose: "Cerrar",
+    copyHeader: "MI PLAN DE CHEQUEO DE ENERGÍA",
+    planLabels: {protect:"Proteger", release:"Soltar", body:"Cuerpo", recharge:"Recargar", connect:"Conectar", boundary:"Límite"},
+    whyAria: "¿Por qué esta pregunta?",
+    introTitle: "Antes de empezar — qué hace esta herramienta y qué no",
+    introBody: "Esto funciona completamente en tu navegador. Nada de lo que respondas se envía a ningún lado, nunca. Por defecto, ni siquiera se guarda nada después de cerrar esta pestaña — activar \"Recordar chequeos\" más adelante guarda solo un puntaje, localmente, en este dispositivo. Nadie — ni tu director/a, ni el departamento de IT, ni nadie — puede ver tus respuestas individuales.",
+    introDismiss: "Entendido, empecemos",
+    feedbackLabel: "¿Te fue útil esto?",
+    feedbackThanks: "Gracias — registrado solo en este dispositivo.",
+    pulseFeedback: (y,n)=>`Comentarios en este dispositivo: ${y} 👍 / ${n} 👎`,
+  }
+};
+
+const QUESTIONS = [
+  { id:'energy', core:true,
+    title:{en:"Where's your energy right now?", es:"¿Cómo está tu energía ahora mismo?"},
+    why:{en:"We ask this first because everything else in the plan scales to how much you actually have — not how much you're supposed to have.",
+         es:"Preguntamos esto primero porque todo lo demás en el plan se ajusta a lo que realmente tienes — no a lo que se supone que debes tener."},
+    options:[
+      {value:'empty', en:'Running on empty', es:'Con el tanque vacío'},
+      {value:'low', en:'Low, but functional', es:'Baja, pero funcional'},
+      {value:'steady', en:'Steady', es:'Estable'},
+      {value:'full', en:'Full tank', es:'Tanque lleno'}
+    ]},
+  { id:'sleep', core:false,
+    title:{en:'How did you sleep last night?', es:'¿Cómo dormiste anoche?'},
+    why:{en:"Sleep is one of the strongest predictors of next-day capacity, so it adjusts your energy score directly.",
+         es:"El sueño es uno de los mejores predictores de la capacidad del día siguiente, así que ajusta directamente tu puntaje de energía."},
+    options:[
+      {value:'rested', en:'Rested', es:'Descansada/o'},
+      {value:'okay', en:'Okay', es:'Regular'},
+      {value:'rough', en:'Rough', es:'Mal'}
+    ]},
+  { id:'body', core:false,
+    title:{en:'How does your body feel right now?', es:'¿Cómo se siente tu cuerpo ahora?'},
+    why:{en:"Physical signals often show up before we consciously notice we're stressed — this question catches what your mind might miss.",
+         es:"Las señales físicas suelen aparecer antes de que notemos conscientemente el estrés — esta pregunta capta lo que la mente podría pasar por alto."},
+    options:[
+      {value:'tense', en:'Tense', es:'Tenso/a'},
+      {value:'foggy', en:'Foggy', es:'Con niebla mental'},
+      {value:'restless', en:'Restless', es:'Inquieto/a'},
+      {value:'fine', en:'Fine', es:'Bien'}
+    ]},
+  { id:'time', core:true,
+    title:{en:'How much time can you actually protect?', es:'¿Cuánto tiempo puedes proteger de verdad?'},
+    why:{en:"A plan sized to 5 minutes looks nothing like one sized to an hour — this keeps the suggestion realistic.",
+         es:"Un plan de 5 minutos no se parece en nada a uno de una hora — esto mantiene la sugerencia realista."},
+    options:[
+      {value:'5', en:'5 minutes', es:'5 minutos'},
+      {value:'15', en:'15 minutes', es:'15 minutos'},
+      {value:'30', en:'30 minutes', es:'30 minutos'},
+      {value:'60', en:'An hour+', es:'Una hora o más'}
+    ]},
+  { id:'load', core:true, multi:true,
+    title:{en:"What's weighing on you most? (Select all that apply)", es:'¿Qué es lo que más pesa hoy? (Selecciona todas las que apliquen)'},
+    why:{en:"Naming the specific thing weighing on you — not just \"stress\" — makes the suggested action specific enough to actually do.",
+         es:"Nombrar lo específico que pesa sobre ti (no solo \"estrés\") hace que la acción sugerida sea lo bastante concreta para hacerla."},
+    options:[
+      {value:'caseload', en:'Student caseload / crisis follow-up', es:'Casos de estudiantes / seguimiento de crisis'},
+      {value:'admin', en:'Paperwork & documentation', es:'Papeleo y documentación'},
+      {value:'people', en:'People & meetings', es:'Personas y reuniones'},
+      {value:'classroom', en:'Classroom management / student behavior', es:'Manejo del aula / comportamiento estudiantil'},
+      {value:'planning', en:'Grading & lesson planning', es:'Calificar y planear lecciones'},
+      {value:'parents', en:'Parent / guardian communication', es:'Comunicación con padres o tutores'},
+      {value:'coverage', en:'Schedule changes / covering for others', es:'Cambios de horario / cubrir a otros'},
+      {value:'everything', en:'Everything at once', es:'Todo a la vez'}
+    ]},
+  { id:'connect', core:false,
+    title:{en:'Connected with another adult today, beyond logistics?', es:'¿Conectaste con otro adulto hoy, más allá de lo logístico?'},
+    why:{en:"Isolation compounds burnout even when workload doesn't change — this checks a factor that's easy to overlook.",
+         es:"El aislamiento agrava el agotamiento incluso cuando la carga de trabajo no cambia — esto revisa un factor fácil de pasar por alto."},
+    options:[
+      {value:'real', en:'Yes, really talked', es:'Sí, hablamos de verdad'},
+      {value:'logistics', en:'Just logistics', es:'Solo logística'},
+      {value:'not_yet', en:'Not yet today', es:'Todavía no hoy'}
+    ]},
+  { id:'boundary', core:false,
+    title:{en:'Something today you need to say "no" to?', es:'¿Hay algo hoy a lo que necesitas decir que no?'},
+    why:{en:"An unaddressed \"no\" tends to cost more energy than the task itself — naming it is often the actual relief.",
+         es:"Un \"no\" pendiente suele costar más energía que la tarea en sí — nombrarlo suele ser el verdadero alivio."},
+    options:[
+      {value:'handled', en:'Already said no', es:'Ya dije que no'},
+      {value:'need_to', en:"Need to, haven't yet", es:'Necesito, pero no lo he hecho'},
+      {value:'no', en:'Nothing today', es:'Nada hoy'}
+    ]}
+];
+
+const PLAN_TEXT = {
+  protect: {
+    5: {en:["Set a 5-minute timer and do exactly one thing: breathe, stretch, or sit in silence. Nothing else counts.",
+             "Give yourself 5 full minutes to do nothing productive on purpose — close your eyes or stare out a window."],
+        es:["Pon un temporizador de 5 minutos y haz una sola cosa: respira, estírate o siéntate en silencio. Nada más cuenta.",
+             "Date 5 minutos completos para no hacer nada productivo, a propósito — cierra los ojos o mira por la ventana."]},
+    15:{en:["Take a 15-minute walk, even just around the building, with your phone left behind.",
+             "Use 15 minutes for something with your hands — tidy a drawer, doodle, water a plant — anything but a screen."],
+        es:["Camina 15 minutos, aunque sea alrededor del edificio, sin el teléfono.",
+             "Usa 15 minutos en algo con las manos — ordena un cajón, dibuja, riega una planta — cualquier cosa menos una pantalla."]},
+    30:{en:["Protect 30 minutes for the one task that would most reduce tomorrow's load — then stop.",
+             "Take 30 minutes fully off the clock — no email, no hallway conversations about work, just off."],
+        es:["Protege 30 minutos para la tarea que más reduciría la carga de mañana — y después, para.",
+             "Tómate 30 minutos completamente fuera del reloj — sin correo, sin conversaciones de trabajo en el pasillo, solo desconectada/o."]},
+    60:{en:["Use this hour for something fully outside of work: a hobby, a nap, a real lunch.",
+             "Spend this hour on something that has nothing to prove and nowhere to report to."],
+        es:["Usa esta hora en algo totalmente fuera del trabajo: un pasatiempo, una siesta, un almuerzo de verdad.",
+             "Dedica esta hora a algo que no tiene nada que demostrar ni a quién rendirle cuentas."]}
+  },
+  release: {
+    caseload:{en:["Move one non-urgent case note to tomorrow's list — not everything needs to be closed today.",
+                   "Pick the one case that can genuinely wait, and let it wait — that's a decision, not a failure."],
+               es:["Mueve una nota de caso no urgente a la lista de mañana — no todo tiene que cerrarse hoy.",
+                   "Elige el caso que de verdad puede esperar, y déjalo esperar — eso es una decisión, no un fallo."]},
+    admin:{en:["Close the tab or folder for one piece of paperwork that isn't due in the next 24 hours.",
+                "Let one form sit untouched until tomorrow — it will still be there, and so will you."],
+            es:["Cierra la pestaña o carpeta de un papeleo que no vence en las próximas 24 horas.",
+                "Deja un formulario sin tocar hasta mañana — seguirá ahí, y tú también."]},
+    people:{en:["Decline or shorten one meeting this week that doesn't need your full presence.",
+                 "Send one 'I can't make this one' message today — practice the sentence before you send it."],
+             es:["Rechaza o acorta una reunión esta semana que no necesite tu presencia completa.",
+                 "Envía hoy un mensaje de 'no puedo asistir a esta' — practica la frase antes de enviarla."]},
+    classroom:{en:["Let one small behavior issue go unaddressed today — not every moment needs a consequence attached.",
+                     "Pick your one non-negotiable for the rest of the day, and let smaller stuff slide until tomorrow."],
+                es:["Deja pasar hoy un problema de comportamiento pequeño — no todo momento necesita una consecuencia.",
+                     "Elige tu único punto innegociable para el resto del día, y deja que lo demás espere hasta mañana."]},
+    planning:{en:["Pick one lesson to plan 'good enough' instead of perfect — reuse something that worked before.",
+                    "Grade the top of the stack, not the whole stack — stop at a number you choose, not at zero."],
+               es:["Elige una lección para planear 'suficientemente bien' en vez de perfecta — reutiliza algo que ya funcionó antes.",
+                    "Califica lo de arriba de la pila, no toda la pila — detente en un número que tú elijas, no en cero."]},
+    parents:{en:["Let one non-urgent parent email wait until tomorrow — a same-day reply isn't actually required.",
+                   "Draft one reply now, but don't send until you've reread it once — protect yourself from a rushed tone."],
+              es:["Deja que un correo de padres no urgente espere hasta mañana — una respuesta el mismo día no es realmente necesaria.",
+                   "Redacta una respuesta ahora, pero no la envíes hasta releerla una vez — protégete de un tono apresurado."]},
+    coverage:{en:["Name out loud, even just to yourself, that today's plan changed — don't pretend it's business as usual.",
+                    "Protect five minutes to reset after covering, before jumping into what was already on your plate."],
+               es:["Reconoce en voz alta, aunque sea solo para ti, que el plan de hoy cambió — no finjas que es un día normal.",
+                    "Protege cinco minutos para reiniciar después de cubrir una clase, antes de saltar a lo que ya tenías pendiente."]},
+    everything:{en:["Pick the one thing that actually matters today and let the rest wait — you can't carry all of it at once.",
+                     "Write down everything competing for your attention, then circle just one — the rest can wait on paper instead of in your head."],
+                 es:["Elige lo único que de verdad importa hoy y deja que lo demás espere — no puedes cargar todo a la vez.",
+                     "Anota todo lo que compite por tu atención, y encierra solo una cosa en un círculo — el resto puede esperar en el papel, no en tu cabeza."]}
+  },
+  body: {
+    tense:{en:["Unclench your jaw and drop your shoulders — a slow neck roll before your next task.",
+                "Notice where you're holding tension right now, and consciously let just that one spot soften."],
+            es:["Afloja la mandíbula y baja los hombros — gira el cuello lentamente antes de tu próxima tarea.",
+                "Nota dónde estás sosteniendo tensión ahora mismo, y suelta conscientemente solo ese punto."]},
+    foggy:{en:["Splash cold water on your face or step outside for 60 seconds of real daylight.",
+                "Drink a full glass of water slowly — fog is often just dehydration wearing a disguise."],
+            es:["Échate agua fría en la cara o sal afuera 60 segundos a tomar luz natural.",
+                "Bebe un vaso de agua completo, despacio — la niebla mental a veces es solo deshidratación disfrazada."]},
+    restless:{en:["Stand up and shake out your hands and legs for 10 seconds — release the fidget instead of fighting it.",
+                   "Take the stairs once, even if you don't need to — give the restlessness somewhere to go."],
+               es:["Ponte de pie y sacude manos y piernas 10 segundos — libera la inquietud en vez de luchar contra ella.",
+                   "Sube las escaleras una vez, aunque no lo necesites — dale a la inquietud un lugar adonde ir."]},
+    fine:{en:["Your body isn't asking for anything right now — a rare thing. Notice it.",
+                "Take one slow breath just to acknowledge that nothing hurts and nothing's urgent right now."],
+           es:["Tu cuerpo no te está pidiendo nada ahora mismo — algo poco común. Nótalo.",
+               "Respira una vez, despacio, solo para reconocer que nada duele y nada es urgente ahora mismo."]}
+  },
+  recharge: {
+    empty:{en:["{TW}, name one thing you will NOT do, on purpose.",
+                "{TW}, give yourself explicit permission to do less than usual."],
+            es:["{TW}, nombra algo que NO harás, a propósito.",
+                "{TW}, date permiso explícito para hacer menos de lo habitual."]},
+    low:{en:["Text one person who makes you laugh — not for a favor, just for connection.",
+               "Put on one song you actually like while you do something else — borrow its energy for three minutes."],
+          es:["Escríbele a alguien que te haga reír — no por un favor, solo por conexión.",
+               "Pon una canción que de verdad te guste mientras haces otra cosa — pídele prestada su energía por tres minutos."]},
+    steady:{en:["Bank this steady energy: write down one win from today before you forget it.",
+                  "Use this steady moment to prep one thing that will make tomorrow morning easier."],
+             es:["Guarda esta energía estable: anota un logro de hoy antes de olvidarlo.",
+                  "Usa este momento estable para preparar algo que facilite la mañana de mañana."]},
+    full:{en:["Use this full-tank moment for something that only you can do — creative, strategic, or joyful.",
+                "Spend a little of this energy on something purely for you, not for anyone else's list."],
+           es:["Usa este momento de tanque lleno en algo que solo tú puedes hacer — creativo, estratégico o alegre.",
+                "Gasta un poco de esta energía en algo puramente para ti, no para la lista de nadie más."]}
+  },
+  connect: {
+    real:{en:["You've already had a real connection today — that matters more than it feels like in the moment.",
+                "Notice that connection you already had today — let yourself actually register it instead of rushing past it."],
+           es:["Ya tuviste una conexión real hoy — eso importa más de lo que parece en el momento.",
+                "Nota esa conexión que ya tuviste hoy — permítete registrarla de verdad en vez de pasarla por alto."]},
+    logistics:{en:["Send one non-work text to someone you like, just to say hi — thirty seconds, no agenda.",
+                     "Ask one colleague one real question today — not about a task, just about them."],
+                es:["Envía un mensaje no laboral a alguien que te caiga bien, solo para saludar — treinta segundos, sin agenda.",
+                     "Hazle una pregunta real a un colega hoy — no sobre una tarea, sino sobre él o ella."]},
+    not_yet:{en:["Before your next {ROLE}, say one non-logistics sentence to a colleague you trust.",
+                   "Somewhere in the next {ROLE}, let one interaction be about a person instead of a task."],
+              es:["Antes de tu próxim{GEND} {ROLE}, dile una frase no logística a un colega de confianza.",
+                   "En algún momento de tu próxim{GEND} {ROLE}, deja que una interacción sea sobre una persona y no sobre una tarea."]}
+  },
+  boundary: {
+    handled:{en:["You already said no to something today — that's real capacity work. Let it count.",
+                   "That 'no' you already gave today wasn't small — let yourself take credit for it."],
+              es:["Ya dijiste que no a algo hoy — eso es trabajo real de capacidad. Que cuente.",
+                   "Ese 'no' que ya diste hoy no fue poca cosa — permítete reconocerlo."]},
+    need_to:{en:["Name the thing you need to decline, {TW2}.",
+                   "Write down the exact words you'll use to say no, {TW2} — having the words ready makes it easier."],
+              es:["Nombra lo que necesitas rechazar, {TW2}.",
+                   "Escribe las palabras exactas que usarás para decir que no, {TW2} — tenerlas listas lo hace más fácil."]},
+    no:{en:["No boundary needed today — bank this ease for a harder day.",
+              "Today's ease is real, not luck you have to justify — let it be enough as it is."],
+         es:["Hoy no necesitas poner límites — guarda esta calma para un día más difícil.",
+              "La calma de hoy es real, no una suerte que tengas que justificar — deja que sea suficiente tal cual."]}
+  }
+};
+
+const ROLE_NOUN = {
+  teacher:{en:'class', es:'clase', gendEs:'a'},
+  counselor:{en:'session', es:'sesión', gendEs:'a'},
+  support:{en:'shift', es:'turno', gendEs:'o'},
+  admin:{en:'meeting', es:'reunión', gendEs:'a'},
+  para:{en:'class', es:'clase', gendEs:'a'},
+  frontoffice:{en:'shift', es:'turno', gendEs:'o'},
+  specialist:{en:'class', es:'clase', gendEs:'a'},
+  facilities:{en:'shift', es:'turno', gendEs:'o'},
+  other:{en:'commitment', es:'compromiso', gendEs:'o'}
+};
+
+const TIMEWORD = {
+  morning:{en:'Tonight', es:'Esta noche'},
+  afternoon:{en:'Tonight', es:'Esta noche'},
+  evening:{en:'In the next hour', es:'En la próxima hora'},
+  night:{en:'Before you sleep', es:'Antes de dormir'}
+};
+const TIMEWORD2 = {
+  morning:{en:'before the day ends', es:'antes de que termine el día'},
+  afternoon:{en:'before the day ends', es:'antes de que termine el día'},
+  evening:{en:'before you log off tonight', es:'antes de desconectarte esta noche'},
+  night:{en:'first thing tomorrow', es:'a primera hora de mañana'}
+};
+
+const ENERGY_SCORE = {empty:15, low:40, steady:65, full:90};
+const SLEEP_MOD = {rested:12, okay:0, rough:-14};
+const ENERGY_COPY = {
+  empty:{en:"You're running on reserve tank. This plan is intentionally small on purpose.", es:"Estás con el tanque de reserva. Este plan es pequeño a propósito."},
+  low:{en:"You have something left — let's spend it carefully, not efficiently.", es:"Te queda algo — vamos a usarlo con cuidado, no con eficiencia."},
+  steady:{en:"You're in a good place to protect this energy rather than spend it all.", es:"Estás en un buen punto para proteger esta energía en vez de gastarla toda."},
+  full:{en:"You have real capacity today — this plan channels it instead of letting it leak away.", es:"Tienes capacidad real hoy — este plan la canaliza en vez de dejar que se escape."}
+};
+const SLEEP_INSIGHT = {
+  rested:{en:"Your rest is showing — protect it by keeping tonight's bedtime just as steady.", es:"Tu descanso se nota — protégelo manteniendo también la hora de dormir esta noche."},
+  okay:{en:"Middling sleep, middling reserves — a short recharge tonight will compound.", es:"Sueño regular, reservas regulares — una recarga corta esta noche se acumula."},
+  rough:{en:"Rough night — go easy on yourself today; recovery starts with tonight's sleep, not today's to-do list.", es:"Mala noche — sé más compasiva/o contigo hoy; la recuperación empieza con el sueño de esta noche, no con la lista de pendientes de hoy."}
+};
+
+const COMBOS = [
+  { category:'release', test:s=> s.energy==='empty' && s.load.includes('everything'),
+    text:{en:["Everything feels urgent right now, but it can't all be first. Pick one thing to set down today — not forever, just today.",
+               "When everything feels equally urgent, usually nothing actually is — choose the single thing that's truly time-sensitive and let the rest wait."],
+           es:["Todo se siente urgente ahora, pero no todo puede ser lo primero. Elige algo para soltar hoy — no para siempre, solo por hoy.",
+               "Cuando todo se siente igual de urgente, normalmente nada lo es de verdad — elige lo único realmente urgente y deja que el resto espere."]} },
+  { category:'body', test:s=> s.sleep==='rough' && (s.body==='tense' || s.body==='restless'),
+    text:{en:["Poor sleep and a tense body often travel together — today isn't the day to push through it. Let your body's signal set the pace.",
+               "Your body is carrying last night's short sleep — treat today as a lower-output day on purpose, not a day to override the signal."],
+           es:["Dormir mal y un cuerpo tenso suelen ir juntos — hoy no es el día para forzarlo. Deja que la señal de tu cuerpo marque el ritmo.",
+               "Tu cuerpo está cargando con la falta de sueño de anoche — trata hoy como un día de menor rendimiento a propósito, no para ignorar la señal."]} },
+  { category:'boundary', test:s=> s.energy==='full' && s.boundary==='handled',
+    text:{en:["Full tank and a boundary already held — this is a good day to actually use that capacity on purpose.",
+               "You've got energy and a boundary already in place today — a rare combination worth spending deliberately."],
+           es:["Tanque lleno y un límite ya puesto — es un buen día para usar esa capacidad a propósito.",
+               "Hoy tienes energía y un límite ya establecido — una combinación poco común que vale la pena aprovechar a propósito."]} }
+];
+
+/* ---------------- state ---------------- */
+const state = {energy:null, sleep:null, body:null, time:null, load:[], connect:null, boundary:null};
+let mode = 'full';
+let lang = 'en';
+let role = '';
+let sessionCheckIns = 0;
+let escalationDismissed = false;
+let rememberOn = false;
+const HISTORY_KEY = 'careai_energy_checkin_history_v1';
+
+function timeContext(){
+  const h = new Date().getHours();
+  if(h>=5 && h<12) return 'morning';
+  if(h>=12 && h<17) return 'afternoon';
+  if(h>=17 && h<21) return 'evening';
+  return 'night';
+}
+function activeQuestions(){ return QUESTIONS.filter(q => mode==='full' || q.core); }
+function pickVariant(arr, seed){ return Array.isArray(arr) ? arr[(sessionCheckIns + seed) % arr.length] : arr; }
+function fillTemplate(str, vars){ return str.replace(/\{(\w+)\}/g, (m,k)=> vars[k] !== undefined ? vars[k] : m); }
+function lineFor(category, key, vars, seed){
+  const combo = COMBOS.find(c => c.category===category && c.test(state));
+  const bank = combo ? combo.text : PLAN_TEXT[category][key];
+  return fillTemplate(pickVariant(bank[lang], seed), vars || {});
+}
+
+function releaseLineForLoads(loads, vars){
+  // Same combo check as lineFor(), so a matching pattern (e.g. empty energy + "everything")
+  // still takes priority whether "everything" was picked alone or alongside other items.
+  const combo = COMBOS.find(c => c.category==='release' && c.test(state));
+  if(combo){
+    return fillTemplate(pickVariant(combo.text[lang], 1), vars || {});
+  }
+  if(loads.length === 1){
+    return fillTemplate(pickVariant(PLAN_TEXT.release[loads[0]][lang], 1), vars || {});
+  }
+  const loadQ = QUESTIONS.find(q => q.id === 'load');
+  const labels = loads.map(v => {
+    const opt = loadQ.options.find(o => o.value === v);
+    return opt ? opt[lang] : v;
+  });
+  const listText = labels.join(lang==='es' ? ', ' : ', ');
+  return lang==='es'
+    ? `Hoy estás cargando varias cosas a la vez: ${listText}. Elige solo una para soltarla en la próxima hora — el resto puede esperar.`
+    : `You're carrying more than one thing today: ${listText}. Pick just one to set down for the next hour — the rest can wait.`;
+}
+
+/* ---------------- local memory (opt-in, degrades gracefully) ---------------- */
+function storageAvailable(){
+  try{
+    const k = '__careai_test__';
+    localStorage.setItem(k,'1');
+    localStorage.removeItem(k);
+    return true;
+  }catch(e){ return false; }
+}
+function loadHistory(){
+  if(!storageAvailable()) return null;
+  try{
+    const raw = localStorage.getItem(HISTORY_KEY);
+    return raw ? JSON.parse(raw) : [];
+  }catch(e){ return null; }
+}
+function saveHistoryEntry(entry){
+  if(!storageAvailable()) return false;
+  try{
+    let hist = loadHistory() || [];
+    hist.push(entry);
+    if(hist.length > 5) hist = hist.slice(hist.length - 5);
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(hist));
+    return true;
+  }catch(e){ return false; }
+}
+function clearHistory(){
+  try{ localStorage.removeItem(HISTORY_KEY); return true; }catch(e){ return false; }
+}
+
+const INTRO_KEY = 'careai_energy_checkin_intro_seen_v1';
+function shouldShowIntro(){
+  if(!storageAvailable()) return true; // graceful: show every time if storage is blocked, still dismissible
+  try{ return !localStorage.getItem(INTRO_KEY); }catch(e){ return true; }
+}
+function markIntroSeen(){
+  try{ localStorage.setItem(INTRO_KEY, '1'); }catch(e){ /* no-op, non-critical */ }
+}
+
+const FEEDBACK_KEY = 'careai_energy_checkin_feedback_v1';
+function loadFeedback(){
+  if(!storageAvailable()) return null;
+  try{
+    const raw = localStorage.getItem(FEEDBACK_KEY);
+    return raw ? JSON.parse(raw) : {yes:0, no:0};
+  }catch(e){ return null; }
+}
+function saveFeedback(vote){
+  if(!storageAvailable()) return false;
+  try{
+    let f = loadFeedback() || {yes:0, no:0};
+    f[vote] = (f[vote] || 0) + 1;
+    localStorage.setItem(FEEDBACK_KEY, JSON.stringify(f));
+    return true;
+  }catch(e){ return false; }
+}
+
+/* ---------------- rendering ---------------- */
+function applyStaticText(){
+  const t = UI[lang];
+  document.getElementById('htmlRoot').lang = lang;
+  document.getElementById('txtSub').textContent = mode==='full' ? t.subFull : t.subQuick;
+  document.getElementById('modeFullBtn').textContent = t.modeFull;
+  document.getElementById('modeQuickBtn').textContent = t.modeQuick;
+  document.getElementById('roleLabelTxt').textContent = t.roleLabel;
+  Array.from(document.getElementById('roleSelect').options).forEach(o => { o.textContent = t.roleOpts[o.value]; });
+  document.getElementById('kioskBtn').textContent = t.kiosk;
+  document.getElementById('langBtn').textContent = t.langBtn;
+  document.getElementById('rememberBtn').textContent = rememberOn ? t.rememberOn : t.rememberOff;
+  document.getElementById('pulseBtn').textContent = t.pulseBtn;
+  document.getElementById('genBtn').textContent = t.genBtn;
+  document.getElementById('genHelp').textContent = mode==='full' ? t.genHelpFull : t.genHelpQuick;
+  document.getElementById('snapshotTitle').textContent = t.snapshotTitle;
+  document.getElementById('planTitle').textContent = t.planTitle;
+  document.getElementById('privacyNote').textContent = t.privacy;
+  document.getElementById('copyBtn').textContent = t.copyBtn;
+  document.getElementById('printBtn').textContent = t.printBtn;
+  document.getElementById('speakBtn').textContent = t.speakBtn;
+  document.getElementById('stopSpeakBtn').textContent = t.stopSpeakBtn;
+  document.getElementById('icsBtn').textContent = t.icsBtn;
+  document.getElementById('resetBtn').textContent = t.resetBtn;
+  document.getElementById('txtFooter').textContent = t.footer;
+  document.getElementById('paperLink').textContent = t.paperLink;
+  document.getElementById('escTitle').textContent = t.escTitle;
+  document.getElementById('escBody').textContent = t.escBody;
+  document.getElementById('escSub').textContent = t.escSub;
+  document.getElementById('escDismiss').textContent = t.escDismiss;
+  document.getElementById('introTitle').textContent = t.introTitle;
+  document.getElementById('introBody').textContent = t.introBody;
+  document.getElementById('introDismiss').textContent = t.introDismiss;
+  document.getElementById('feedbackLabel').textContent = t.feedbackLabel;
+  document.getElementById('manualCopyLabel').textContent = t.manualCopyLabel;
+  document.getElementById('manualCopyClose').textContent = t.manualCopyClose;
+  renderPulse();
+}
+
+function buildCards(){
+  const wrap = document.getElementById('questionsWrap');
+  wrap.innerHTML = '';
+  const qs = activeQuestions();
+  qs.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.dataset.qid = q.id;
+
+    const qHeader = document.createElement('div');
+    qHeader.className = 'q-header';
+    const h2 = document.createElement('h2');
+    h2.id = 'qh-' + q.id;
+    h2.textContent = `${idx+1}. ${q.title[lang]}`;
+    const whyBtn = document.createElement('button');
+    whyBtn.className = 'why-btn';
+    whyBtn.type = 'button';
+    whyBtn.textContent = 'i';
+    whyBtn.setAttribute('aria-expanded','false');
+    whyBtn.setAttribute('aria-label', UI[lang].whyAria);
+    whyBtn.setAttribute('aria-controls','why-'+q.id);
+    qHeader.appendChild(h2);
+    qHeader.appendChild(whyBtn);
+    card.appendChild(qHeader);
+
+    const whyP = document.createElement('p');
+    whyP.className = 'why-text';
+    whyP.id = 'why-' + q.id;
+    whyP.textContent = q.why[lang];
+    card.appendChild(whyP);
+
+    whyBtn.addEventListener('click', ()=>{
+      const showing = whyP.classList.toggle('show');
+      whyBtn.setAttribute('aria-expanded', showing);
+    });
+
+    const optsWrap = document.createElement('div');
+    optsWrap.className = 'options';
+    optsWrap.setAttribute('role', q.multi ? 'group' : 'radiogroup');
+    optsWrap.setAttribute('aria-labelledby', h2.id);
+    optsWrap.dataset.group = q.id;
+    if(q.multi) optsWrap.dataset.multi = 'true';
+
+    q.options.forEach(o => {
+      const el = document.createElement('div');
+      el.className = 'opt';
+      el.dataset.value = o.value;
+      const isSelected = q.multi ? state[q.id].includes(o.value) : state[q.id] === o.value;
+      el.setAttribute('role', q.multi ? 'checkbox' : 'radio');
+      el.setAttribute('tabindex','0');
+      el.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+      if(isSelected) el.classList.add('selected');
+      el.textContent = o[lang];
+      optsWrap.appendChild(el);
+    });
+    card.appendChild(optsWrap);
+    wrap.appendChild(card);
+  });
+
+  document.querySelectorAll('.options').forEach(group=>{
+    const qId = group.dataset.group;
+    const isMulti = group.dataset.multi === 'true';
+    const opts = Array.from(group.querySelectorAll('.opt'));
+    opts.forEach((opt, idx)=>{
+      opt.addEventListener('click', ()=> isMulti ? toggleOption(qId, opt) : selectOption(qId, opt, group));
+      opt.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' '){
+          e.preventDefault();
+          isMulti ? toggleOption(qId, opt) : selectOption(qId, opt, group);
+        } else if(e.key === 'ArrowRight' || e.key === 'ArrowDown'){
+          e.preventDefault();
+          opts[(idx+1) % opts.length].focus();
+        } else if(e.key === 'ArrowLeft' || e.key === 'ArrowUp'){
+          e.preventDefault();
+          opts[(idx-1+opts.length) % opts.length].focus();
+        }
+      });
+    });
+  });
+
+  updateProgress();
+  checkReady();
+}
+
+function selectOption(qId, opt, group){
+  const wasAnswered = state[qId] !== null;
+  group.querySelectorAll('.opt').forEach(o=>{ o.classList.remove('selected'); o.setAttribute('aria-checked','false'); });
+  opt.classList.add('selected');
+  opt.setAttribute('aria-checked','true');
+  state[qId] = opt.dataset.value;
+  updateProgress();
+  checkReady();
+  if(!wasAnswered){ setTimeout(()=>scrollToNext(qId), 260); }
+}
+
+function toggleOption(qId, opt){
+  const value = opt.dataset.value;
+  const wasEmpty = state[qId].length === 0;
+  const idx = state[qId].indexOf(value);
+  if(idx === -1){
+    state[qId].push(value);
+    opt.classList.add('selected');
+    opt.setAttribute('aria-checked','true');
+  } else {
+    state[qId].splice(idx, 1);
+    opt.classList.remove('selected');
+    opt.setAttribute('aria-checked','false');
+  }
+  updateProgress();
+  checkReady();
+  if(wasEmpty && state[qId].length > 0){ setTimeout(()=>scrollToNext(qId), 260); }
+}
+
+function scrollToNext(currentId){
+  const qs = activeQuestions();
+  const i = qs.findIndex(q => q.id === currentId);
+  for(let j = i+1; j < qs.length; j++){
+    if(!isAnswered(qs[j])){
+      const card = document.querySelector(`.card[data-qid="${qs[j].id}"]`);
+      if(card) card.scrollIntoView({behavior:'smooth', block:'center'});
+      return;
+    }
+  }
+  const btn = document.getElementById('genBtn');
+  if(!btn.disabled) btn.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+function isAnswered(q){
+  const v = state[q.id];
+  return q.multi ? (Array.isArray(v) && v.length > 0) : (v !== null);
+}
+function resetState(){
+  QUESTIONS.forEach(q => { state[q.id] = q.multi ? [] : null; });
+}
+function updateProgress(){
+  const qs = activeQuestions();
+  const answered = qs.filter(isAnswered).length;
+  const total = qs.length;
+  document.getElementById('progressFill').style.width = (total ? (answered/total*100) : 0) + '%';
+  document.getElementById('progressLabel').textContent = UI[lang].progress(answered, total);
+}
+function checkReady(){
+  const qs = activeQuestions();
+  document.getElementById('genBtn').disabled = !qs.every(isAnswered);
+}
+
+/* ---------------- pulse view ---------------- */
+function renderPulse(){
+  const t = UI[lang];
+  const card = document.getElementById('pulseCard');
+  if(card.style.display === 'none') return;
+  document.getElementById('pulseTitle').textContent = t.pulseTitle;
+  document.getElementById('pulseDisclaimer').textContent = t.pulseDisclaimer;
+  const hist = loadHistory();
+  const fb = loadFeedback();
+  const fbLine = fb ? `<p class="pulse-sub">${t.pulseFeedback(fb.yes||0, fb.no||0)}</p>` : '';
+  const body = document.getElementById('pulseBody');
+  if(hist === null){
+    body.innerHTML = `<p class="pulse-sub">${t.pulseUnavailable}</p>` + fbLine;
+    return;
+  }
+  if(hist.length === 0){
+    body.innerHTML = `<p class="pulse-sub">${t.pulseEmpty}</p>` + fbLine;
+    return;
+  }
+  const avg = Math.round(hist.reduce((a,h)=>a+h.r,0) / hist.length);
+  body.innerHTML = `
+    <div class="pulse-stat">${avg}<span style="font-size:15px;color:#8388A3;"> / 100</span></div>
+    <p class="pulse-sub">${t.pulseAvgLabel} · ${t.pulseCount(hist.length)}</p>
+    ${fbLine}
+    <button class="toggle-btn" id="clearHistBtn">${t.clearHistory}</button>
+  `;
+  const clearBtn = document.getElementById('clearHistBtn');
+  if(clearBtn) clearBtn.addEventListener('click', ()=>{ clearHistory(); renderPulse(); });
+}
+
+/* ---------------- generate ---------------- */
+document.getElementById('genBtn').addEventListener('click', ()=>{
+  const t = UI[lang];
+  const tc = timeContext();
+  const roleKey = role || 'other';
+  const roleNoun = ROLE_NOUN[roleKey];
+
+  const baseScore = ENERGY_SCORE[state.energy];
+  const timeBonus = state.time==='60'?25:state.time==='30'?15:state.time==='15'?8:4;
+  const sleepBonus = mode==='full' ? SLEEP_MOD[state.sleep] : 0;
+  const restoreScore = Math.max(0, Math.min(100, baseScore + timeBonus + sleepBonus));
+
+  const circumference = 251.2;
+  document.getElementById('gaugeArc').style.strokeDashoffset = circumference - (circumference * restoreScore/100);
+  document.getElementById('gaugeNum').textContent = restoreScore;
+
+  let gaugeHtml = `<b>${lang==='es'?'Puntaje de recuperación':'Restore score'}: ${restoreScore}/100.</b> ${ENERGY_COPY[state.energy][lang]}`;
+  if(mode==='full'){
+    gaugeHtml += ' ' + SLEEP_INSIGHT[state.sleep][lang];
+  } else {
+    gaugeHtml += ' ' + (lang==='es'
+      ? 'Modo rápido: el puntaje usa solo energía y tiempo — el modo completo también ajusta por sueño, así que el mismo nivel de energía puede dar un número distinto entre modos.'
+      : "Quick mode: this score is based on energy and time only — Full mode also adjusts for sleep, so the same energy level can land on a different number between modes.");
+  }
+  document.getElementById('gaugeCopy').innerHTML = gaugeHtml;
+
+  const vars = { TW: TIMEWORD[tc][lang], TW2: TIMEWORD2[tc][lang], ROLE: roleNoun[lang], GEND: roleNoun.gendEs };
+
+  const plan = [
+    {n:1, key:'protect', text: fillTemplate(pickVariant(PLAN_TEXT.protect[state.time][lang],0), vars)},
+    {n:2, key:'release', text: releaseLineForLoads(state.load, vars)},
+  ];
+  if(mode==='full'){
+    plan.push({n:3, key:'body', text: lineFor('body', state.body, vars, 2)});
+    plan.push({n:4, key:'recharge', text: fillTemplate(pickVariant(PLAN_TEXT.recharge[state.energy][lang],3), vars)});
+    plan.push({n:5, key:'connect', text: lineFor('connect', state.connect, vars, 4)});
+    plan.push({n:6, key:'boundary', text: lineFor('boundary', state.boundary, vars, 5)});
+  } else {
+    plan.push({n:3, key:'recharge', text: fillTemplate(pickVariant(PLAN_TEXT.recharge[state.energy][lang],3), vars)});
+  }
+
+  document.getElementById('planList').innerHTML = plan.map(p=>`
+    <div class="plan-item">
+      <div class="badge">${p.n}</div>
+      <div class="txt"><div class="label">${t.planLabels[p.key]}</div><p>${p.text}</p></div>
+    </div>
+  `).join('');
+
+  const escCard = document.getElementById('escalationCard');
+  const distressed = mode==='full' && state.energy==='empty' && state.sleep==='rough' &&
+                      (state.body==='tense' || state.body==='restless');
+  escCard.style.display = (distressed && !escalationDismissed) ? 'block' : 'none';
+
+  const gaugeEl = document.querySelector('.gauge');
+  gaugeEl.classList.remove('pop'); void gaugeEl.offsetWidth; gaugeEl.classList.add('pop');
+
+  sessionCheckIns += 1;
+  document.getElementById('sessionNote').textContent = sessionCheckIns === 1 ? t.sessionOne : t.sessionMany(sessionCheckIns);
+
+  const rememberNote = document.getElementById('rememberNote');
+  if(rememberOn){
+    const saved = saveHistoryEntry({t:Date.now(), e:baseScore, r:restoreScore});
+    rememberNote.textContent = saved ? t.rememberedYes : t.rememberedBlocked;
+    renderPulse();
+  } else {
+    rememberNote.textContent = '';
+  }
+
+  const result = document.getElementById('result');
+  result.classList.add('show');
+  result.setAttribute('tabindex','-1');
+  result.focus({preventScroll:true});
+  result.scrollIntoView({behavior:'smooth', block:'start'});
+
+  document.getElementById('feedbackYes').disabled = false;
+  document.getElementById('feedbackNo').disabled = false;
+  document.getElementById('feedbackYes').classList.remove('selected');
+  document.getElementById('feedbackNo').classList.remove('selected');
+  document.getElementById('feedbackThanks').style.display = 'none';
+});
+
+document.getElementById('escDismiss').addEventListener('click', ()=>{
+  escalationDismissed = true;
+  document.getElementById('escalationCard').style.display = 'none';
+});
+
+/* ---------------- controls ---------------- */
+document.getElementById('modeFullBtn').addEventListener('click', ()=> setMode('full'));
+document.getElementById('modeQuickBtn').addEventListener('click', ()=> setMode('quick'));
+function setMode(m){
+  if(mode === m) return;
+  mode = m;
+  document.getElementById('modeFullBtn').setAttribute('aria-pressed', mode==='full');
+  document.getElementById('modeQuickBtn').setAttribute('aria-pressed', mode==='quick');
+  resetState();
+  escalationDismissed = false;
+  document.getElementById('result').classList.remove('show');
+  applyStaticText();
+  buildCards();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+document.getElementById('roleSelect').addEventListener('change', (e)=>{ role = e.target.value; });
+
+document.getElementById('kioskBtn').addEventListener('click', ()=>{
+  const on = document.body.classList.toggle('kiosk');
+  document.getElementById('kioskBtn').setAttribute('aria-pressed', on);
+});
+
+document.getElementById('langBtn').addEventListener('click', ()=>{
+  lang = lang === 'en' ? 'es' : 'en';
+  applyStaticText();
+  buildCards();
+});
+
+document.getElementById('rememberBtn').addEventListener('click', ()=>{
+  rememberOn = !rememberOn;
+  document.getElementById('rememberBtn').setAttribute('aria-pressed', rememberOn);
+  applyStaticText();
+});
+
+document.getElementById('pulseBtn').addEventListener('click', ()=>{
+  const card = document.getElementById('pulseCard');
+  const showing = card.style.display !== 'none';
+  card.style.display = showing ? 'none' : 'block';
+  document.getElementById('pulseBtn').setAttribute('aria-pressed', !showing);
+  if(!showing) renderPulse();
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  resetState();
+  escalationDismissed = false;
+  document.getElementById('result').classList.remove('show');
+  buildCards();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+document.getElementById('copyBtn').addEventListener('click', ()=>{
+  const text = UI[lang].copyHeader + "\n\n" + document.getElementById('planList').innerText;
+  const btn = document.getElementById('copyBtn');
+  const old = btn.textContent;
+  function showCopied(){
+    btn.textContent = UI[lang].copied;
+    setTimeout(()=>{ btn.textContent = old; }, 1500);
+  }
+  function showManualCopy(){
+    document.getElementById('manualCopyText').value = text;
+    document.getElementById('manualCopyOverlay').style.display = 'flex';
+    const ta = document.getElementById('manualCopyText');
+    ta.focus();
+    ta.select();
+  }
+  function fallbackCopy(){
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.left = '-9999px';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      const ok = document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok) showCopied(); else showManualCopy();
+    }catch(e){
+      showManualCopy();
+    }
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(showCopied).catch(fallbackCopy);
+  } else {
+    fallbackCopy();
+  }
+});
+
+document.getElementById('manualCopyClose').addEventListener('click', ()=>{
+  document.getElementById('manualCopyOverlay').style.display = 'none';
+});
+
+document.getElementById('printBtn').addEventListener('click', ()=>{
+  try{
+    window.print();
+  }catch(e){
+    alert(lang==='es'
+      ? 'La impresión no está disponible en este navegador. Prueba copiar el texto en su lugar.'
+      : "Printing isn't available in this browser. Try the Copy button instead.");
+  }
+});
+
+/* ---------------- read aloud ---------------- */
+const speechSupported = ('speechSynthesis' in window);
+if(speechSupported){
+  document.getElementById('speakBtn').hidden = false;
+}
+document.getElementById('speakBtn').addEventListener('click', ()=>{
+  if(!speechSupported) return;
+  window.speechSynthesis.cancel();
+  const items = Array.from(document.querySelectorAll('.plan-item'));
+  const text = items.map(it => it.querySelector('.label').textContent + '. ' + it.querySelector('p').textContent).join(' ... ');
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = lang==='es' ? 'es-ES' : 'en-US';
+  utter.rate = 0.95;
+  utter.onend = ()=>{ document.getElementById('speakBtn').hidden = false; document.getElementById('stopSpeakBtn').hidden = true; };
+  window.speechSynthesis.speak(utter);
+  document.getElementById('speakBtn').hidden = true;
+  document.getElementById('stopSpeakBtn').hidden = false;
+});
+document.getElementById('stopSpeakBtn').addEventListener('click', ()=>{
+  if(speechSupported) window.speechSynthesis.cancel();
+  document.getElementById('speakBtn').hidden = false;
+  document.getElementById('stopSpeakBtn').hidden = true;
+});
+
+/* ---------------- calendar export ---------------- */
+document.getElementById('icsBtn').addEventListener('click', ()=>{
+  const minutes = parseInt(state.time, 10) || 15;
+  const now = new Date();
+  const end = new Date(now.getTime() + minutes*60000);
+  function fmt(d){ return d.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z'; }
+  const protectP = document.querySelector('.plan-item .txt p');
+  const protectText = protectP ? protectP.textContent : '';
+  const summary = lang==='es' ? 'Tiempo protegido — Chequeo de Energía' : 'Protected time — Energy Check-In';
+  const gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+    + '&text=' + encodeURIComponent(summary)
+    + '&dates=' + fmt(now) + '/' + fmt(end)
+    + '&details=' + encodeURIComponent(protectText);
+  const win = window.open(gcalUrl, '_blank', 'noopener,noreferrer');
+  // Note: window.open() with 'noopener' returns null in most browsers even on SUCCESS
+  // (by design, since noopener severs the window reference) — so we deliberately do NOT
+  // treat a null return as "popup blocked." Doing so previously caused this tab to
+  // navigate away to Google Calendar on every click, destroying the current plan.
+});
+
+/* ---------------- intro card ---------------- */
+document.getElementById('introDismiss').addEventListener('click', ()=>{
+  document.getElementById('introCard').style.display = 'none';
+  markIntroSeen();
+});
+
+/* ---------------- feedback tap ---------------- */
+function submitFeedback(vote){
+  saveFeedback(vote);
+  document.getElementById('feedbackYes').disabled = true;
+  document.getElementById('feedbackNo').disabled = true;
+  document.getElementById(vote === 'yes' ? 'feedbackYes' : 'feedbackNo').classList.add('selected');
+  document.getElementById('feedbackThanks').textContent = UI[lang].feedbackThanks;
+  document.getElementById('feedbackThanks').style.display = 'inline';
+  renderPulse();
+}
+document.getElementById('feedbackYes').addEventListener('click', ()=> submitFeedback('yes'));
+document.getElementById('feedbackNo').addEventListener('click', ()=> submitFeedback('no'));
+
+/* ---------------- init ---------------- */
+applyStaticText();
+buildCards();
+if(shouldShowIntro()){
+  document.getElementById('introCard').style.display = 'block';
+}
+</script>
+</body>
+</html>
