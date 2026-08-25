@@ -226,6 +226,8 @@
   }
   .escalation-card p{font-family:'Calibri','Arial',sans-serif; font-size:14px; line-height:1.55; color:#3D3316; margin:0 0 10px;}
   .escalation-card .fine{font-size:12px; color:#8A6A1F; font-style:italic;}
+  .escalation-card a{color:#8A6A1F; font-weight:700; text-decoration:underline; text-underline-offset:2px;}
+  .escalation-card a:hover{color:#6B4F14;}
   .escalation-dismiss{
     font-family:'Calibri','Arial',sans-serif; font-size:12.5px;
     border:1.5px solid #8A6A1F; background:transparent; color:#5C481A;
@@ -352,6 +354,10 @@
   body.kiosk .gauge-label .n{font-size:30px;}
   body.kiosk .gauge-copy{font-size:17px;}
   body.kiosk .toggle-btn, body.kiosk select#roleSelect, body.kiosk label[for="roleSelect"]{font-size:15px;}
+  body.kiosk .escalation-card h3{font-size:16px;}
+  body.kiosk .escalation-card p{font-size:18px;}
+  body.kiosk .escalation-card .fine{font-size:15px;}
+  body.kiosk .escalation-dismiss{font-size:15px; padding:9px 18px;}
 
   @media print{
     body{background:#FFFFFF;}
@@ -528,8 +534,8 @@ const UI = {
     footer: "Built for the CARE-AI Framework · Capacity · Accessible Support · Responsive Communities · Educator Wellness",
     paperLink: "🖨️ Prefer paper? Download the blank worksheet",
     escTitle: "Before you go —",
-    escBody: "This sounds like more than a rough day. If it's sitting heavier than usual, consider reaching out to [Your EAP line here] or a trusted colleague. You don't have to carry this alone.",
-    escSub: "This tool isn't a substitute for professional support.",
+    escBody: "This sounds like more than a rough day. If it's sitting heavier than usual, consider reaching out to your EAP — ComPsych GuidanceResources: <a href=\"tel:+18553654754\">855.365.4754</a> (<a href=\"https://www.guidanceresources.com\" target=\"_blank\" rel=\"noopener\">guidanceresources.com</a>, Web ID: ONEAMERICA6), 24/7 — or the 988 Suicide &amp; Crisis Lifeline: <a href=\"tel:988\">call</a> or <a href=\"sms:988\">text</a>, 24/7. You don't have to carry this alone.",
+    escSub: "This tool isn't a substitute for professional support. Reaching out to your EAP or 988 is confidential and separate from this tool — nothing here is seen by anyone at school.",
     escDismiss: "Dismiss",
     sessionOne: "This is your 1st check-in this session — not saved anywhere after you close this tab.",
     sessionMany: (n)=>`This is check-in #${n} this session — still nothing saved after you close this tab.`,
@@ -584,8 +590,8 @@ const UI = {
     footer: "Creado para el Marco CARE-AI · Capacidad · Apoyo Accesible · Comunidades Responsivas · Bienestar Docente",
     paperLink: "🖨️ ¿Prefieres papel? Descarga la hoja en blanco",
     escTitle: "Antes de irte —",
-    escBody: "Esto suena a más que un mal día. Si se siente más pesado de lo habitual, considera contactar a [tu línea de EAP aquí] o a un colega de confianza. No tienes que cargar esto sola/o.",
-    escSub: "Esta herramienta no sustituye el apoyo profesional.",
+    escBody: "Esto suena a más que un mal día. Si se siente más pesado de lo habitual, considera contactar a tu EAP — ComPsych GuidanceResources: <a href=\"tel:+18553654754\">855.365.4754</a> (<a href=\"https://www.guidanceresources.com\" target=\"_blank\" rel=\"noopener\">guidanceresources.com</a>, Web ID: ONEAMERICA6), disponible las 24 horas — o la Línea de Crisis y Suicidio 988: <a href=\"tel:988\">llama</a> o <a href=\"sms:988\">envía un mensaje de texto</a>, las 24 horas. No tienes que cargar esto sola/o.",
+    escSub: "Esta herramienta no sustituye el apoyo profesional. Contactar a tu EAP o al 988 es confidencial y separado de esta herramienta — nadie en la escuela ve nada de esto.",
     escDismiss: "Cerrar",
     sessionOne: "Este es tu 1er chequeo de esta sesión — no se guarda en ningún lugar al cerrar esta pestaña.",
     sessionMany: (n)=>`Este es el chequeo #${n} de esta sesión — sigue sin guardarse nada al cerrar esta pestaña.`,
@@ -627,8 +633,8 @@ const QUESTIONS = [
       {value:'okay', en:'Okay', es:'Regular'},
       {value:'rough', en:'Rough', es:'Mal'}
     ]},
-  { id:'body', core:false,
-    title:{en:'How does your body feel right now?', es:'¿Cómo se siente tu cuerpo ahora?'},
+  { id:'body', core:false, multi:true,
+    title:{en:'How does your body feel right now? (Select all that apply)', es:'¿Cómo se siente tu cuerpo ahora? (Selecciona todas las que apliquen)'},
     why:{en:"Physical signals often show up before we consciously notice we're stressed — this question catches what your mind might miss.",
          es:"Las señales físicas suelen aparecer antes de que notemos conscientemente el estrés — esta pregunta capta lo que la mente podría pasar por alto."},
     options:[
@@ -827,6 +833,20 @@ const TIMEWORD2 = {
 
 const ENERGY_SCORE = {empty:15, low:40, steady:65, full:90};
 const SLEEP_MOD = {rested:12, okay:0, rough:-14};
+
+// Distress signal used only to decide whether to show the escalation/EAP card.
+// Deliberately separate from ENERGY_SCORE/SLEEP_MOD above (the Restore score),
+// because the Restore score also folds in "time available," which is a
+// logistics answer, not a distress signal — we don't want someone's card
+// to appear or disappear just because of how much time they had today.
+// Only energy + sleep + body (full mode only) feed this.
+const ENERGY_DISTRESS = {empty:3, low:2, steady:0, full:0};
+const SLEEP_DISTRESS  = {rough:3, okay:1, rested:0};
+const BODY_DISTRESS   = {tense:2, restless:2, foggy:1, fine:0};
+// Max possible = 8 (empty+rough+tense/restless — today's old exact-match case).
+// Threshold of 7 also catches one-notch-off neighbors, e.g. low+rough+tense,
+// or empty+rough+foggy, without firing on milder combinations.
+const DISTRESS_THRESHOLD = 7;
 const ENERGY_COPY = {
   empty:{en:"You're running on reserve tank. This plan is intentionally small on purpose.", es:"Estás con el tanque de reserva. Este plan es pequeño a propósito."},
   low:{en:"You have something left — let's spend it carefully, not efficiently.", es:"Te queda algo — vamos a usarlo con cuidado, no con eficiencia."},
@@ -845,7 +865,7 @@ const COMBOS = [
                "When everything feels equally urgent, usually nothing actually is — choose the single thing that's truly time-sensitive and let the rest wait."],
            es:["Todo se siente urgente ahora, pero no todo puede ser lo primero. Elige algo para soltar hoy — no para siempre, solo por hoy.",
                "Cuando todo se siente igual de urgente, normalmente nada lo es de verdad — elige lo único realmente urgente y deja que el resto espere."]} },
-  { category:'body', test:s=> s.sleep==='rough' && (s.body==='tense' || s.body==='restless'),
+  { category:'body', test:s=> s.sleep==='rough' && (s.body.includes('tense') || s.body.includes('restless')),
     text:{en:["Poor sleep and a tense body often travel together — today isn't the day to push through it. Let your body's signal set the pace.",
                "Your body is carrying last night's short sleep — treat today as a lower-output day on purpose, not a day to override the signal."],
            es:["Dormir mal y un cuerpo tenso suelen ir juntos — hoy no es el día para forzarlo. Deja que la señal de tu cuerpo marque el ritmo.",
@@ -858,7 +878,7 @@ const COMBOS = [
 ];
 
 /* ---------------- state ---------------- */
-const state = {energy:null, sleep:null, body:null, time:null, load:[], connect:null, boundary:null};
+const state = {energy:null, sleep:null, body:[], time:null, load:[], connect:null, boundary:null};
 let mode = 'full';
 let lang = 'en';
 let role = '';
@@ -902,6 +922,32 @@ function releaseLineForLoads(loads, vars){
   return lang==='es'
     ? `Hoy estás cargando varias cosas a la vez: ${listText}. Elige solo una para soltarla en la próxima hora — el resto puede esperar.`
     : `You're carrying more than one thing today: ${listText}. Pick just one to set down for the next hour — the rest can wait.`;
+}
+
+// Body question is select-all-that-apply. We lead with the plan line for the
+// single most pressing sensation (priority order below), reusing the existing
+// hand-written PLAN_TEXT lines, then note any other selected sensations rather
+// than trying to auto-compose a blended sentence for every combination.
+const BODY_PRIORITY = ['tense', 'restless', 'foggy', 'fine'];
+function bodyLineForSelections(bodies, vars){
+  const combo = COMBOS.find(c => c.category==='body' && c.test(state));
+  if(combo){
+    return fillTemplate(pickVariant(combo.text[lang], 2), vars || {});
+  }
+  const primary = BODY_PRIORITY.find(p => bodies.includes(p)) || bodies[0];
+  let line = fillTemplate(pickVariant(PLAN_TEXT.body[primary][lang], 2), vars || {});
+  const others = bodies.filter(b => b !== primary);
+  if(others.length){
+    const bodyQ = QUESTIONS.find(q => q.id === 'body');
+    const labels = others.map(v => {
+      const opt = bodyQ.options.find(o => o.value === v);
+      return opt ? opt[lang] : v;
+    });
+    line += lang==='es'
+      ? ` (También notaste: ${labels.join(', ')}.)`
+      : ` (You also noted: ${labels.join(', ')}.)`;
+  }
+  return line;
 }
 
 /* ---------------- local memory (opt-in, degrades gracefully) ---------------- */
@@ -988,7 +1034,7 @@ function applyStaticText(){
   document.getElementById('txtFooter').textContent = t.footer;
   document.getElementById('paperLink').textContent = t.paperLink;
   document.getElementById('escTitle').textContent = t.escTitle;
-  document.getElementById('escBody').textContent = t.escBody;
+  document.getElementById('escBody').innerHTML = t.escBody;
   document.getElementById('escSub').textContent = t.escSub;
   document.getElementById('escDismiss').textContent = t.escDismiss;
   document.getElementById('introTitle').textContent = t.introTitle;
@@ -1183,6 +1229,11 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
   const roleKey = role || 'other';
   const roleNoun = ROLE_NOUN[roleKey];
 
+  // Re-arm the escalation card for every fresh check-in. A dismiss only hides
+  // *this* result — it should not silently suppress the card for a later,
+  // possibly worse, check-in later in the same session.
+  escalationDismissed = false;
+
   const baseScore = ENERGY_SCORE[state.energy];
   const timeBonus = state.time==='60'?25:state.time==='30'?15:state.time==='15'?8:4;
   const sleepBonus = mode==='full' ? SLEEP_MOD[state.sleep] : 0;
@@ -1209,7 +1260,7 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
     {n:2, key:'release', text: releaseLineForLoads(state.load, vars)},
   ];
   if(mode==='full'){
-    plan.push({n:3, key:'body', text: lineFor('body', state.body, vars, 2)});
+    plan.push({n:3, key:'body', text: bodyLineForSelections(state.body, vars)});
     plan.push({n:4, key:'recharge', text: fillTemplate(pickVariant(PLAN_TEXT.recharge[state.energy][lang],3), vars)});
     plan.push({n:5, key:'connect', text: lineFor('connect', state.connect, vars, 4)});
     plan.push({n:6, key:'boundary', text: lineFor('boundary', state.boundary, vars, 5)});
@@ -1225,8 +1276,13 @@ document.getElementById('genBtn').addEventListener('click', ()=>{
   `).join('');
 
   const escCard = document.getElementById('escalationCard');
-  const distressed = mode==='full' && state.energy==='empty' && state.sleep==='rough' &&
-                      (state.body==='tense' || state.body==='restless');
+  const bodyDistress = mode==='full'
+    ? Math.max(0, ...state.body.map(b => BODY_DISTRESS[b] || 0))
+    : 0;
+  const distressScore = mode==='full'
+    ? (ENERGY_DISTRESS[state.energy]||0) + (SLEEP_DISTRESS[state.sleep]||0) + bodyDistress
+    : 0;
+  const distressed = mode==='full' && distressScore >= DISTRESS_THRESHOLD;
   escCard.style.display = (distressed && !escalationDismissed) ? 'block' : 'none';
 
   const gaugeEl = document.querySelector('.gauge');
